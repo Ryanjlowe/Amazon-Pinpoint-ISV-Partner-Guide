@@ -16,7 +16,7 @@ Amazon Pinpoint is a multi-channel digital engagement service. It is a part of t
 Below is a set of common integration patterns for Amazon Pinpoint.  This is not an exhaustive list and customers and partners [can use the APIs](https://docs.aws.amazon.com/pinpoint/latest/apireference/welcome.html) to build any kind of integration. Example source code in Python is shown using the [AWS Python Boto3 SDK](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/pinpoint.html).  Integrations can choose to use one of the AWS SDKs or call the REST APIs directly.  No SDK is necessary when integrating with Amazon Pinpoint.
 
 ## Pattern: Send Users and Endpoints to Amazon Pinpoint
-ISVs that manage users and user addresses can send this data to Amazon Pinpoint. This can be used to help build marketing campaign audiences, by providing new users and addresses as they are created, or by augmenting the current set of users and addresses in Amazon Pinpoint by enriching with new data attributes.  These attributes can then be used for message personalization, such as `First Name` or `Item Purchased`, or for filtering when creating dynamic segments to create specific audiences, such as `High Value Customer` or `Users Nearby`.
+ISVs that manage users and user addresses can send this data to Amazon Pinpoint. This can be used to help build marketing campaign audiences, by providing new users and addresses as they are created, or by augmenting the current set of users and addresses in Amazon Pinpoint by enriching with new data attributes.  These attributes can then be used for message personalization, such as `First Name` or `Item Purchased`, or for filtering when creating dynamic segments to create specific audiences, such as `High Value Customer`, `Users Nearby` or `Newsletter Subscription Status`.
 
 There are multiple different ways that both Endpoints and Users can be sent to Amazon Pinpoint. There is an API to [Update Endpoints](https://docs.aws.amazon.com/pinpoint/latest/developerguide/audience-define-endpoints.html) either [one by one](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-endpoints-endpoint-id.html#apps-application-id-endpoints-endpoint-idput) or in [Batch](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-endpoints.html#apps-application-id-endpointsput).  Endpoints and users can also be imported in bulk by first [uploading a CSV or JSON file](https://docs.aws.amazon.com/pinpoint/latest/developerguide/audience-define-import.html) to Amazon S3 and [starting an import job](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-jobs-import.html#apps-application-id-jobs-importpost) via the APIs.  Lastly, endpoints can also be added and updated when calling the [Events API](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-events.html#apps-application-id-eventspost) to submit new user events.
 
@@ -56,7 +56,13 @@ A full deployable reference architecture that includes Amazon S3 triggers to aut
 
 ## Pattern: Send User Events to Amazon Pinpoint
 
-##### Example:
+ISVs that that track users and their behaviors can send user event data to Amazon Pinpoint.  This can be used to inform Amazon Pinpoint about engagement events that occur from other systems for engagement reporting.  These events can also be used to trigger Amazon Pinpoint Campaigns and Journeys in real-time.  Forgotten password events could be sent from a website login that trigger a campaign to send out a one-time password email.  Item added to cart events could be used to trigger the start of an abandon cart journey.
+
+The [PutEvents API](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-events.html#apps-application-id-eventspost) can be used to submit events one at a time or in batches.  Events are tied to endpoints, so a single event that affects 100 endpoints would be submitted as a batch of 100 endpoint events.  Event attributes can be filtered when creating Campaigns or Journeys allowing marketers to select very specific event criteria.
+
+The same API call can be used to update Endpoints at the same time.  This allows for updating endpoint or user attributes at the same time an event is being reported.
+
+##### Example: Calling the PutEvents API with a communication preference update event that also updates the endpoint attributes
 ```python
 import boto3
 import time
@@ -69,13 +75,16 @@ response = client.put_events(
     'BatchItem': {
       '[UniqueEndpointID1ForUser]': {
         'Endpoint': {
-          'Attributes': {
+          'Attributes': {       # Custom Endpoint Attributes Defined
             'EmailPreference_DailyDeals': ['Subscribed']
           }
         },
         'Events': {
           '[SomeUniqueEventId]': {
             'EventType': 'custom.preference_update',
+            'Attributes': {       # Custom Event Attributes Defined
+              'UpdatedPreference': 'EmailPreference_DailyDeals'
+            },
             'Timestamp': datetime.datetime.fromtimestamp(time.time()).isoformat()
           }
         }
@@ -87,7 +96,11 @@ response = client.put_events(
 
 ## Pattern: Send Pre-Computed Lists of Users to Amazon Pinpoint
 
-##### Example:
+ISVs that are able to perform advanced segmentation can import into Amazon Pinpoint pre-computed lists of users for marketers to execute against directly.  Amazon Pinpoint's segmentation capabilities are flexible and allow for imported static lists of endpoints from external sources.  This allows targeting to take place by an ISV's segmentation engine while using Amazon Pinpoint's channel execution and orchestration capabilities.  
+
+Similar to the [Send Users and Endpoints to Amazon Pinpoint](#Pattern-Send-Users-and-Endpoints-to-Amazon-Pinpoint) pattern above, ISVs can use the [CreateImportJob API](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-events.html#apps-application-id-eventspost) to import static CSV or JSON files containing lists of segments. If immediate execution is required, architectures can be set up, as seen in [this reference architecture](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-events.html#apps-application-id-eventspost), to detect new import files, begin an import job, and then immediately execute a send.
+
+##### Example: Importing a named segment from CSV file generated by an external segmentation service
 ```python
 import boto3
 client = boto3.client('pinpoint')

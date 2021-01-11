@@ -20,7 +20,7 @@ response = client.update_endpoints_batch(
     'Item': [
       {
         'Address': 'customer@example.com',
-        'Attributes': {       # Custom Attributes Defined
+        'Attributes': {       # Custom Endpoint Attributes Defined
           'EmailPreference_Newsletter': ['Subscribed'],
           'EmailPreference_DailyDeals': ['Unsubscribed']
         },
@@ -28,7 +28,7 @@ response = client.update_endpoints_batch(
         'Id': '[UniqueEndpointID1ForUser]',
         'OptOut': 'NONE',
         'User': {
-          'UserAttributes': {       # Custom Attributes Defined
+          'UserAttributes': {       # Custom User Attributes Defined
             'FirstName': [ 'John'],
             'LastName': [ 'Doe']
           },
@@ -36,14 +36,14 @@ response = client.update_endpoints_batch(
         }
       }, {
         'Address': '+15555555555',
-        'Attributes': {       # Custom Attributes Defined
+        'Attributes': {       # Custom Endpoint Attributes Defined
           'SMSPreference_Deals': ['Unsubscribed'],
         },
         'ChannelType': 'SMS',
         'Id': '[UniqueEndpointID2ForUser]',
         'OptOut': 'ALL',
         'User': {
-          'UserAttributes': {       # Custom Attributes Defined
+          'UserAttributes': {       # Custom User Attributes Defined
             'FirstName': [ 'John'],
             'LastName': [ 'Doe']
           },
@@ -60,7 +60,7 @@ response = client.update_endpoints_batch(
 
 This example uses the [real-time events to Amazon Pinpoint](../../../#Pattern-Send-User-Events-to-Amazon-Pinpoint) pattern.
 
-In the below example, we have configured the CDP to call Amazon Pinpoint whenever an attribute or piece of data changes for a user.  In the first example we are submitting a changed communication preference.  The second example shows a purchase event.  Both examples will update the Endpoint with new data, but the events could also be used to trigger an Amazon Pinpoint Campaign or Journey in real-time.
+In the below example, we have configured the CDP to call Amazon Pinpoint whenever an attribute or piece of data changes for a user.  In the first example we are submitting a changed communication preference.  We can specify the event attribute `UpdatedPreference` to allow marketers to filter events to specific preference updates when creating campaigns or journeys.  The second example shows a purchase event.  Both examples will update the Endpoint with new data, but the events could also be used to trigger an Amazon Pinpoint Campaign or Journey in real-time.
 
 ```python
 import boto3
@@ -74,13 +74,16 @@ response = client.put_events(
     'BatchItem': {
       '[UniqueEndpointID1ForUser]': {
         'Endpoint': {
-          'Attributes': {
+          'Attributes': {       # Custom Endpoint Attributes Defined
             'EmailPreference_DailyDeals': ['Subscribed']
           }
         },
         'Events': {
           '[SomeUniqueEventId]': {
             'EventType': 'custom.preference_update',
+            'Attributes': {       # Custom Event Attributes Defined
+              'UpdatedPreference': 'EmailPreference_DailyDeals'
+            },
             'Timestamp': datetime.datetime.fromtimestamp(time.time()).isoformat()
           }
         }
@@ -106,7 +109,7 @@ response = client.put_events(
           '[SomeUniqueEventId]': {
             'EventType': 'custom.purchase_event',
             'Attributes': {
-              'Item': ['Hat']
+              'Item': 'Hat'
             },
             'Timestamp': datetime.datetime.fromtimestamp(time.time()).isoformat()
           }
