@@ -6,7 +6,7 @@ The below guide provides examples and patterns that an ISV could use to integrat
 * [Customer Data Platform (CDP) ISVs](cdp/)
 * [Application Component ISVs](app/) - coming soon!
 * [Custom Channel ISVs](channel/) - coming soon!
-* [Identity Management ISVs](identity/) - coming soon!
+* [Identity Management ISVs](identity/)
 
 ## What is Amazon Pinpoint
 Amazon Pinpoint is a multi-channel digital engagement service. It is a part of the Customer Engagement suite of services, enabling customers to send both campaign and transactional messages across email, SMS, push notification, voice, and custom channels.  For more details, and a quick guide to Pinpoint terms, see [Amazon Pinpoint Key Concepts](pinpoint_detail/README.md).
