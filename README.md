@@ -4,9 +4,10 @@ This repository serves as a guide for how Independent Software Vendors (ISVs) an
 
 The below guide provides examples and patterns that an ISV could use to integrate their application with Amazon Pinpoint.  Use the links below to find pages specific to the ISVs listed:
 * [Customer Data Platform (CDP) ISVs](cdp/)
-* [Application Component ISVs](app/) - coming soon!
+* [Application Development Framework ISVs](app/) - coming soon!
 * [Custom Channel ISVs](channel/) - coming soon!
 * [Identity Management ISVs](identity/)
+
 
 ## What is Amazon Pinpoint
 Amazon Pinpoint is a multi-channel digital engagement service. It is a part of the Customer Engagement suite of services, enabling customers to send both campaign and transactional messages across email, SMS, push notification, voice, and custom channels.  For more details, and a quick guide to Pinpoint terms, see [Amazon Pinpoint Key Concepts](pinpoint_detail/README.md).
@@ -117,6 +118,27 @@ response = client.create_import_job(
 )
 ```
 
+## Pattern: Get all Endpoints for a User
+
+Amazon Pinpoint customers can allow their end-users to update their preferences and attributes directly through frameworks like [AWS Amplify](https://docs.amplify.aws/) and solutions like the [Amazon Pinpoint Preference Center](https://aws.amazon.com/solutions/implementations/amazon-pinpoint-preference-center/).  It can therefore be necessary for ISVs to retrieve the data in Amazon Pinpoint to update the central other systems.
+
+ISVs can use the [GetUserEndpoints API](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-users-user-id.html#apps-application-id-users-user-idget) to retrieve all known endpoints, addresses, and attributes known to Amazon Pinpoint.
+
+##### Example: Retrieving all endpoints for a user
+```python
+import boto3
+client = boto3.client('pinpoint')
+
+response = client.get_user_endpoints(
+    ApplicationId='[PinpointProjectId]',
+    UserId='[UserIdThatConnectsEndpoints]'
+)
+```
+
+
+## Pattern: Export Amazon Pinpoint's Segments
+TODO
+
 
 ## Pattern: Consume Amazon Pinpoint's Engagement Events
 
@@ -144,8 +166,6 @@ def lambda_handler(event, context):
 A full list of events available out of the box by Amazon Pinpoint's event stream can be found [here](https://docs.aws.amazon.com/pinpoint/latest/developerguide/event-streams.html).
 
 
-## Pattern: Export Amazon Pinpoint's Segments
-TODO
 
 ## Pattern: Build Amazon Pinpoint Custom Channels
 
@@ -175,3 +195,26 @@ def lambda_handler(event, context):
 
 ## Pattern: Build Amazon Pinpoint SMS Two-way Chat
 TODO
+
+
+## Pattern: Experimental Campaign Filters
+
+Amazon Pinpoint's campaign targeting capabilities can be extended to perform [just-in-time filtering through the use of the beta feature, camapign hooks](https://docs.aws.amazon.com/pinpoint/latest/developerguide/segments-dynamic.html). When a campaign is configured to use campaign hooks, Amazon Pinpoint's standard segmentation is used, but at time of send and before the messages are uniquely rendered, Amazon Pinpoint will pass all of the targeted endpoints, in batches of 100, to an AWS Lambda function.  This function can then mutate the list of endpoints to either reduce the list or augment the attributes to be used for rendering.  NOTE: As of this time, this functionality is only available to Amazon Pinpoint campaigns, not journeys.
+
+ISVs can use this functionality to perform a variety of interesting integrations.  ISVs can build AWS Lambda functions to perform filtering of endpoints for audit checks or enforcement of message frequency capping rules.  ISVs can also build integrations to [fetch data from other systems](https://github.com/aws-samples/digital-user-engagement-reference-architectures#send-time-amazon-pinpoint-campaign-attributes) to be made available in message rendering.  ISVs could even build an AWS Lambda function [fetch and render full templates from external systems](https://github.com/aws-samples/digital-user-engagement-reference-architectures#external-amazon-pinpoint-campaign-templates) to be used in the message send.
+
+##### Example: Campaign Hook AWS Lambda function to retrieve data to used for rendering
+```python
+import json
+import mock_offer_system
+
+def lambda_handler(event, context):
+  for endpointId,endpoint in event['Endpoints'].items():
+    #TODO - call a webservice, look up a value from a database, call a CRM API to retrieve an offer for this endpoint
+    offer_data = mock_offer_system.retrieve_offer_for_endpoint(endpointId)
+    # add offer data to endpoint attributes so it can be used for message rendering
+    endpoint['Attributes']['Offer'] = [offer_data]
+
+  # return mutated endpoints
+  return event['Endpoints']
+```
