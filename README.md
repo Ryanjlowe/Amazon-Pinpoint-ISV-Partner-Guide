@@ -8,13 +8,84 @@ The below guide provides examples and patterns that an ISV could use to integrat
 * [Custom Channel ISVs](channel/)
 * [Identity Management ISVs](identity/)
 
-
 ## What is Amazon Pinpoint
 Amazon Pinpoint is a multi-channel digital engagement service. It is a part of the Customer Engagement suite of services, enabling customers to send both campaign and transactional messages across email, SMS, push notification, voice, and custom channels.  For more details, and a quick guide to Pinpoint terms, see [Amazon Pinpoint Key Concepts](pinpoint_detail/README.md).
 
 ## Note on Below Integration Patterns
 
 Below is a set of common integration patterns for Amazon Pinpoint.  This is not an exhaustive list and customers and partners [can use the APIs](https://docs.aws.amazon.com/pinpoint/latest/apireference/welcome.html) to build any kind of integration. Example source code in Python is shown using the [AWS Python Boto3 SDK](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/pinpoint.html).  Integrations can choose to use one of the AWS SDKs or call the REST APIs directly.  No SDK is necessary when integrating with Amazon Pinpoint.
+
+## Pattern: Send a message using Amazon Pinpoint
+Amazon Pinpoint is a message delivery service.  ISVs can use Amazon Pinpoint to deliver messages to end-users across email, SMS, push, and voice channels. Amazon Pinpoint uses Amazon Simple Email Service to deliver email messages.  Amazon Pinpoint can send SMS messages in [over 200 countries and regions](https://docs.aws.amazon.com/pinpoint/latest/userguide/channels-sms-countries.html). Amazon Pinpoint supports push messages using Firebase Cloud Messaging, Apple Push Notification service, Baidu Cloud Push, and Amazon Device Message.
+
+The simplest way an ISV can integrate with Amazon Pinpoint to send a message is via the [Send Messages API](https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/SendMessages).  The API supports messages being sent via Email, SMS, Push, and Voice.  Messages can be specified in the API call or abstracted by using re-usable [Amazon Pinpoint Templates](https://docs.aws.amazon.com/pinpoint/latest/userguide/messages-templates.html).  ISVs can specify the address or have Amazon Pinpoint lookup the address by specifying an Endpoint ID.  Further, messages sent via the Send Messages API can also utilize token replacement for [message personalization](https://docs.aws.amazon.com/pinpoint/latest/userguide/message-templates-personalizing.html).
+
+##### Example:  Using the Send Messages API to send an email to 3 recipients using a Template
+```python
+import boto3
+client = boto3.client('pinpoint')
+
+response = client.send_messages(
+  ApplicationId='[PinpointProjectId]',
+  MessageRequest={
+    'Addresses': {
+      'success+1@simulator.amazonses.com': {
+        'ChannelType': 'EMAIL',
+        'Substitutions': {
+          'FirstName': ['John']
+        }
+      },
+      'success+2@simulator.amazonses.com': {
+        'ChannelType': 'EMAIL',
+        'Substitutions': {
+          'FirstName': ['Ryan']
+        }
+      },
+      'success+3@simulator.amazonses.com': {
+        'ChannelType': 'EMAIL',
+        'Substitutions': {
+          'FirstName': ['Dave']
+        }
+      }
+    },
+    'MessageConfiguration': {
+      'EmailMessage': {
+        'FromAddress': 'no-reply@example.com'
+      }
+    },
+    'TemplateConfiguration': {
+      'EmailTemplate': {
+        'Name': 'MyEmailTemplate'
+      }
+    }
+  }
+)
+```
+
+##### Example:  Using the Send Messages API to send an SMS message with an inline message to a stored endpoint
+```python
+import boto3
+client = boto3.client('pinpoint')
+
+response = client.send_messages(
+  ApplicationId='[PinpointProjectId]',
+  MessageRequest={
+    'Endpoints': {
+      '[UniqueEndpointID1ForUser]': {}
+    },
+    'MessageConfiguration': {
+      'SMSMessage': {
+        'Body': '{{User.UserAttributes.FirstName}} your one time password is: {{OTP}}',
+        'MessageType': 'TRANSACTIONAL',
+        'OriginationNumber': '[ORIGINATION_NUMBER]',
+        'Substitutions': {
+            'OTP': ['123456']
+        }
+      }
+    }
+  }
+)
+```
 
 ## Pattern: Send Users and Endpoints to Amazon Pinpoint
 ISVs that manage users and user addresses can send this data to Amazon Pinpoint. This can be used to help build marketing campaign audiences, by providing new users and addresses as they are created, or by augmenting the current set of users and addresses in Amazon Pinpoint by enriching with new data attributes.  These attributes can then be used for message personalization, such as `First Name` or `Item Purchased`, or for filtering when creating dynamic segments to create specific audiences, such as `High Value Customer`, `Users Nearby` or `Newsletter Subscription Status`.
