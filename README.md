@@ -5,7 +5,7 @@ This repository serves as a guide for how Independent Software Vendors (ISVs) an
 The below guide provides examples and patterns that an ISV could use to integrate their application with Amazon Pinpoint.  Use the links below to find pages specific to the ISVs listed:
 * [Customer Data Platform (CDP) ISVs](cdp/)
 * [Application Development Framework ISVs](app/) - coming soon!
-* [Custom Channel ISVs](channel/) - coming soon!
+* [Custom Channel ISVs](channel/)
 * [Identity Management ISVs](identity/)
 
 
@@ -172,7 +172,7 @@ Custom channels can be used in creative ways that do not involve messaging, such
 
 Combining all of this, a collection of custom channels could enable a marketer to randomly assign users an offer, write that back to the customer record on file, then ensure that every touch point the user has will consistently show the offer details including email, sms, Facebook, and the website.
 
-##### Example:
+##### Example: Executing a Custom Channel AWS Lambda function
 ```python
 import json
 
@@ -186,6 +186,16 @@ def lambda_handler(event, context):
     # or TODO - Call Facebook to write a message
     # or TODO - write into a database the details of the journey path they are on
 ```
+
+##### Open Source Channels
+
+There are a few open-source examples of custom channels found in GitHub:
+* [WhatsApp](https://github.com/aws-samples/amazon-pinpoint-whatsapp-channel)
+* [IFTTT](https://github.com/aws-samples/amazon-pinpoint-ifttt-channel)
+* [Salesforce CRM](https://github.com/aws-samples/amazon-pinpoint-salesforce-channel)
+* [Slack](https://github.com/aws-samples/amazon-pinpoint-slack-channel)
+* [Twitter](https://github.com/aws-samples/amazon-pinpoint-twitter-channel)
+* [Amazon Connect](https://github.com/aws-samples/amazon-pinpoint-connect-channel)
 
 ## Pattern: Build Amazon Pinpoint SMS Two-way Chat
 
