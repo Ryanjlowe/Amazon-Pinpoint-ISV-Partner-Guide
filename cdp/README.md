@@ -2,6 +2,8 @@
 
 Amazon Pinpoint is not a CDP, but it does work very well when connected to a CDP. A typical CDP is the authoritative source of truth for all users and their respective addresses. A CDP will get all of this information by connecting to a variety of different data sources in order to build a true picture of the end-user, all of their attributes, their behavioral data, and communication and channel preferences.  This information becomes invaluable for Amazon Pinpoint to effectively filter, personalize, and execute communications.
 
+ISVs should think of Amazon Pinpoint as a downstream data store for users and their communication channels (endpoints) and preferences (attributes).  CDP ISVs would best integrate by syncing this data to Amazon Pinpoint in a consistent fashion so that the data in Amazon Pinpoint is relevant and consistent for marketing and other communications teams.  ISVs are encouraged to NOT build their CDP or other customer data store on top of Amazon Pinpoint in a way that makes Amazon Pinpoint the central source of truth for customer data.
+
 CDPs have a variety of different ways that they can integrate with Amazon Pinpoint to the benefit of joint customers.  CDPs can:
 
 ### Update Amazon Pinpoint when a new user is created in the CDP with all known addresses
