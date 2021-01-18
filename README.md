@@ -4,19 +4,21 @@ This repository serves as a guide for how Independent Software Vendors (ISVs) an
 
 The below guide provides examples and patterns that an ISV could use to integrate their application with Amazon Pinpoint.  Use the links below to find pages specific to the ISVs listed:
 * [Customer Data Platform (CDP) ISVs](cdp/)
-* [Application Development Framework ISVs](app/) - coming soon!
+* [Application Development Framework ISVs](app/)
 * [Custom Channel ISVs](channel/)
 * [Identity Management ISVs](identity/)
 
 ## What is Amazon Pinpoint
-Amazon Pinpoint is a multi-channel digital engagement service. It is a part of the Customer Engagement suite of services, enabling customers to send both campaign and transactional messages across email, SMS, push notification, voice, and custom channels.  For more details, and a quick guide to Pinpoint terms, see [Amazon Pinpoint Key Concepts](pinpoint_detail/README.md).
+Amazon Pinpoint is a multi-channel digital engagement service. It is a part of the Customer Engagement suite of services, enabling customers to send both promotional and transactional messages across email, SMS, push notification, voice, and custom channels.  For more details, and a quick guide to Pinpoint terms, see [Amazon Pinpoint Key Concepts](pinpoint_detail/README.md).
+
+See the [Other Amazon Pinpoint Resources](#Other-Amazon-Pinpoint-Resources]) below for official documentation, reference architectures with full CloudFormation source code, fully-vetted AWS Solutions, and recorded webinars and other videos.
 
 ## Note on Below Integration Patterns
 
-Below is a set of common integration patterns for Amazon Pinpoint.  This is not an exhaustive list and customers and partners [can use the APIs](https://docs.aws.amazon.com/pinpoint/latest/apireference/welcome.html) to build any kind of integration. Example source code in Python is shown using the [AWS Python Boto3 SDK](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/pinpoint.html).  Integrations can choose to use one of the AWS SDKs or call the REST APIs directly.  No SDK is necessary when integrating with Amazon Pinpoint.
+Below is a set of common integration patterns for Amazon Pinpoint.  This is not an exhaustive list of integration patterns.  Customers and partners [can use the APIs](https://docs.aws.amazon.com/pinpoint/latest/apireference/welcome.html) to build a variety of other integrations. This repo's example source code is written in Python and shown using the [AWS Python Boto3 SDK](https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/pinpoint.html).  Integrations can choose to use one of the [AWS SDKs](https://aws.amazon.com/tools/) or call the [REST APIs](https://docs.aws.amazon.com/pinpoint/latest/apireference/welcome.html) directly.  No SDK is required when integrating with Amazon Pinpoint.
 
 ## Pattern: Send a message using Amazon Pinpoint
-Amazon Pinpoint is a message delivery service.  ISVs can use Amazon Pinpoint to deliver messages to end-users across email, SMS, push, and voice channels. Amazon Pinpoint uses Amazon Simple Email Service to deliver email messages.  Amazon Pinpoint can send SMS messages in [over 200 countries and regions](https://docs.aws.amazon.com/pinpoint/latest/userguide/channels-sms-countries.html). Amazon Pinpoint supports push messages using Firebase Cloud Messaging, Apple Push Notification service, Baidu Cloud Push, and Amazon Device Message.
+At its core, Amazon Pinpoint is a message delivery service.  ISVs can use Amazon Pinpoint to deliver messages to end-users across email, SMS, push, and voice channels. Amazon Pinpoint uses Amazon Simple Email Service to deliver email messages.  Amazon Pinpoint can send SMS messages in [over 200 countries and regions](https://docs.aws.amazon.com/pinpoint/latest/userguide/channels-sms-countries.html). Amazon Pinpoint supports push messages using Firebase Cloud Messaging, Apple Push Notification service, Baidu Cloud Push, and Amazon Device Message.
 
 The simplest way an ISV can integrate with Amazon Pinpoint to send a message is via the [Send Messages API](https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01/SendMessages).  The API supports messages being sent via Email, SMS, Push, and Voice.  Messages can be specified in the API call or abstracted by using re-usable [Amazon Pinpoint Templates](https://docs.aws.amazon.com/pinpoint/latest/userguide/messages-templates.html).  ISVs can specify the address or have Amazon Pinpoint lookup the address by specifying an Endpoint ID.  Further, messages sent via the Send Messages API can also utilize token replacement for [message personalization](https://docs.aws.amazon.com/pinpoint/latest/userguide/message-templates-personalizing.html).
 
@@ -88,7 +90,7 @@ response = client.send_messages(
 ```
 
 ## Pattern: Send Users and Endpoints to Amazon Pinpoint
-ISVs that manage users and user addresses can send this data to Amazon Pinpoint. This can be used to help build marketing campaign audiences, by providing new users and addresses as they are created, or by augmenting the current set of users and addresses in Amazon Pinpoint by enriching with new data attributes.  These attributes can then be used for message personalization, such as `First Name` or `Item Purchased`, or for filtering when creating dynamic segments to create specific audiences, such as `High Value Customer`, `Users Nearby` or `Newsletter Subscription Status`.
+ISVs that manage users and user addresses can sync this data to Amazon Pinpoint. This can be used to help build marketing campaign audiences, by providing new users and addresses as they are created, or by augmenting the current set of users and addresses in Amazon Pinpoint by enriching with new data attributes.  These attributes can then be used for message personalization, such as `First Name` or `Item Purchased`, or for filtering when creating dynamic segments to create specific audiences, such as `High Value Customer`, `Users Nearby` or `Newsletter Subscription Status`.
 
 There are multiple different ways that both Endpoints and Users can be sent to Amazon Pinpoint. There is an API to [Update Endpoints](https://docs.aws.amazon.com/pinpoint/latest/developerguide/audience-define-endpoints.html) either [one by one](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-endpoints-endpoint-id.html#apps-application-id-endpoints-endpoint-idput) or in [Batch](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-endpoints.html#apps-application-id-endpointsput).  Endpoints and users can also be imported in bulk by first [uploading a CSV or JSON file](https://docs.aws.amazon.com/pinpoint/latest/developerguide/audience-define-import.html) to Amazon S3 and [starting an import job](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-jobs-import.html#apps-application-id-jobs-importpost) via the APIs.  Lastly, endpoints can also be added and updated when calling the [Events API](https://docs.aws.amazon.com/pinpoint/latest/apireference/apps-application-id-events.html#apps-application-id-eventspost) to submit new user events.
 
@@ -180,7 +182,7 @@ client = boto3.client('pinpoint')
 response = client.create_import_job(
     ApplicationId='[PinpointProjectId]',
     ImportJobRequest={
-        'DefineSegment': True,
+        'DefineSegment': True,  # Allows for definition of a named segment in Amazon Pinpoint
         'Format': 'CSV',
         'RoleArn': 'arn:aws:iam::account-id:role/role-name-with-path',
         'S3Url': 's3://bucket-name/folder-name/file-name.csv',
@@ -235,7 +237,7 @@ A full list of events available out of the box by Amazon Pinpoint's event stream
 
 ## Pattern: Build Amazon Pinpoint Custom Channels
 
-Amazon Pinpoint has 4 channels available natively out of the box including: Email, SMS, Push for Mobile Devices, and Voice.  Additionally, Amazon Pinpoint ISVs can create their own [custom channels](https://docs.aws.amazon.com/pinpoint/latest/developerguide/channels-custom.html) allowing marketers to send messages across any "channel" using any service that can be reached by an AWS Lambda function.  
+Amazon Pinpoint has four channels available natively out of the box including: Email, SMS, Push for Mobile Devices, and Voice.  Additionally, Amazon Pinpoint ISVs can create their own [custom channels](https://docs.aws.amazon.com/pinpoint/latest/developerguide/channels-custom.html) allowing marketers to send messages across any "channel" using any service that can be reached by an AWS Lambda function.  
 
 A custom channel could be built to send messages to users on social media platforms by calling APIs on popular services like Facebook, Twitter, and WhatsApp.  Email and SMS messages could be sent using alternative email and SMS providers by calling other platform APIs. A custom channel could simply just write a message into a message database, such as DynamoDB, that is later retrieved by a web or mobile app on page load.
 
@@ -312,3 +314,10 @@ def lambda_handler(event, context):
   # return mutated endpoints
   return event['Endpoints']
 ```
+
+## Other Amazon Pinpoint Resources
+* [Amazon Pinpoint Home](https://aws.amazon.com/pinpoint/)
+* [AWS Digital User Engagement Videos and Recorded Webinars](https://awsdue.tv/)
+* [Digital User Engagement Reference Architectures](https://github.com/aws-samples/digital-user-engagement-reference-architectures)
+* [AWS Solutions](https://aws.amazon.com/solutions/implementations/?solutions-all.sort-by=item.additionalFields.sortDate&solutions-all.sort-order=desc&solutions-all.q=pinpoint&solutions-all.q_operator=AND)
+* [Amazon Pinpoint Documentation](https://docs.aws.amazon.com/pinpoint/)

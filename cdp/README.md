@@ -4,13 +4,13 @@ Amazon Pinpoint is not a CDP, but it does work very well when connected to a CDP
 
 ISVs should think of Amazon Pinpoint as a downstream data store for users and their communication channels (endpoints) and preferences (attributes).  CDP ISVs would best integrate by syncing this data to Amazon Pinpoint in a consistent fashion so that the data in Amazon Pinpoint is relevant and consistent for marketing and other communications teams.  ISVs are encouraged to NOT build their CDP or other customer data store on top of Amazon Pinpoint in a way that makes Amazon Pinpoint the central source of truth for customer data.
 
-CDPs have a variety of different ways that they can integrate with Amazon Pinpoint to the benefit of joint customers.  CDPs can:
+CDPs have a variety of different ways that they can integrate with Amazon Pinpoint to the benefit of joint customers:
 
 ### Update Amazon Pinpoint when a new user is created in the CDP with all known addresses
 
 This example uses the [Send Users and Endpoints to Amazon Pinpoint](../../../#Pattern-Send-Users-and-Endpoints-to-Amazon-Pinpoint) pattern.
 
-In the below example, we have configured the CDP to call Amazon Pinpoint whenever a new user is created and include all of the necessary endpoints used for communication.  We are sending User Attributes including first and last name.  We are also sending over communication preferences so that the marketing team has access to the user's preferences and can abide by them when creating campaigns and journeys in Amazon Pinpoint.
+In the below example, we have configured the CDP to call Amazon Pinpoint whenever a new user is created and include all of the necessary endpoints, endpoint and user attributes, and communication preferences.  We are sending User Attributes including first and last name.  We are also sending over communication preferences so that the marketing team has access to the user's preferences and can abide by them when creating campaigns and journeys in Amazon Pinpoint.
 
 ```python
 import boto3
