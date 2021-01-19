@@ -11,7 +11,7 @@ The below guide provides examples and patterns that an ISV could use to integrat
 ## What is Amazon Pinpoint
 Amazon Pinpoint is a multi-channel digital engagement service. It is a part of the Customer Engagement suite of services, enabling customers to send both promotional and transactional messages across email, SMS, push notification, voice, and custom channels.  For more details, and a quick guide to Pinpoint terms, see [Amazon Pinpoint Key Concepts](pinpoint_detail/README.md).
 
-See the [Other Amazon Pinpoint Resources](#Other-Amazon-Pinpoint-Resources]) below for official documentation, reference architectures with full CloudFormation source code, fully-vetted AWS Solutions, and recorded webinars and other videos.
+See the [Other Amazon Pinpoint Resources](#Other-Amazon-Pinpoint-Resources) below for official documentation, reference architectures with full CloudFormation source code, fully-vetted AWS Solutions, and recorded webinars and other videos.
 
 ## Note on Below Integration Patterns
 
